@@ -2,13 +2,20 @@
 // Created by atwbzhang on 2024/7/10.
 //
 #pragma once
+#include "common.h"
 #include "hittable.h"
+#include "ray.h"
 #include "vec3.h"
+#include "interval.h"
+#include "material.h"
 
 class Sphere : public Hittable {
   public:
     Sphere() {}
-    Sphere(const Point3& center, double radius) : center_(center), radius_(fmax(0, radius)) {}
+    Sphere(const Point3& center, double radius, std::shared_ptr<Material> material) 
+        : center_(center), radius_(ffmax(0, radius)), material_ptr_(material) {
+        // Initialize the material to a default material.
+    }
 
     const Point3 center() const { return center_; }
     const double radius() const { return radius_; }
@@ -37,6 +44,7 @@ class Sphere : public Hittable {
         record.p = r.at(root);
         Vec3 outward_normal = (record.p - center_) / radius_;
         record.set_face_normal(r, outward_normal);
+        record.material_ptr = material_ptr_;
 
         return true;
     }
@@ -44,4 +52,5 @@ class Sphere : public Hittable {
   private:
     Point3 center_;
     double radius_;
+    std::shared_ptr<Material> material_ptr_;
 };

@@ -4,6 +4,7 @@
 #pragma once
 #include <cmath>
 #include <iostream>
+
 #include "common.h"
 
 using std::sqrt;
@@ -55,6 +56,12 @@ class Vec3 {
 
     inline double length_squared() const {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
+    }
+
+    bool near_zero() const {
+        // Return true if the vector is close to zero in all dimensions.
+        auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
     }
 
     static Vec3 random() {
@@ -125,7 +132,11 @@ inline Vec3 random_in_unit_sphere() {
 }
 
 inline Vec3 random_unit_vector() {
-    return unit_vector(random_in_unit_sphere());
+    // return unit_vector(random_in_unit_sphere());
+    auto a = random_double(0, 2 * kPi);
+    auto z = random_double(-1, 1);
+    auto r = sqrt(1 - z * z);
+    return Vec3(r * cos(a), r * sin(a), z);
 }
 
 inline Vec3 random_on_hemisphere(const Vec3& normal) {
@@ -135,4 +146,8 @@ inline Vec3 random_on_hemisphere(const Vec3& normal) {
     } else {
         return -in_unit_sphere;
     }
+}
+
+inline Vec3 reflect(const Vec3& v, const Vec3& n) {
+    return v - 2 * dot(v, n) * n;
 }
