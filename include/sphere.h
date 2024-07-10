@@ -13,7 +13,7 @@ class Sphere : public Hittable {
     const Point3 center() const { return center_; }
     const double radius() const { return radius_; }
     
-    bool hit(const Ray& r, double tmin, double tmax, HitRecord& record) const override {
+    bool hit(const Ray& r, Interval ray_t, HitRecord& record) const override {
         Vec3 oc = center_ - r.origin();
         auto a = r.direction().length_squared();
         auto b_2 = dot(oc, r.direction());
@@ -26,9 +26,9 @@ class Sphere : public Hittable {
 
         auto sqrt_discriminant = sqrt(discriminant);
         auto root = (b_2 - sqrt_discriminant) / a;
-        if (root < tmin || root > tmax) {
+        if (!ray_t.surrounds(root)) {
             root = (b_2 + sqrt_discriminant) / a;
-            if (root < tmin || root > tmax) {
+            if (!ray_t.surrounds(root)) {
                 return false;
             }
         }

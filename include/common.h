@@ -10,9 +10,9 @@
 #include "vec3.h"
 #include "ray.h"
 #include "color.h"
+#include "interval.h"
 
 // constants
-constexpr double kInfinity = std::numeric_limits<double>::max();
 constexpr double kPi = 3.1415926535897932385;
 
 // utility functions

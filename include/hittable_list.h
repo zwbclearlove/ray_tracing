@@ -15,13 +15,13 @@ class HittableList : public Hittable {
     void clear() { objects_.clear(); }
     void add(std::shared_ptr<Hittable> object) { objects_.emplace_back(object); }
 
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& record) const {
+    virtual bool hit(const Ray& r, Interval ray_t, HitRecord& record) const {
         HitRecord temp_rec;
         bool hit_anything = false;
-        double closest_so_far = tmax;
-        
+        double closest_so_far = ray_t.max();
+
         for (const auto& object : objects_) {
-            if (object->hit(r, tmin, closest_so_far, temp_rec)) {
+            if (object->hit(r, Interval(ray_t.min(), closest_so_far), temp_rec)) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 record = temp_rec;

@@ -4,6 +4,7 @@
 #pragma once
 #include "ray.h"
 #include "vec3.h"
+#include "interval.h"
 
 
 struct HitRecord {
@@ -24,7 +25,7 @@ struct HitRecord {
 
 class Hittable {
   public:
-    virtual bool hit(const Ray& r, double tmin, double tmax, HitRecord& record) const = 0;
+    virtual bool hit(const Ray& r, Interval ray_t, HitRecord& record) const = 0;
 };
 
 
