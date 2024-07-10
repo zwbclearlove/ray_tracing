@@ -1,10 +1,7 @@
 //
-// Created by atwbzhang on 2024/7/9.
+// Created by atwbzhang on 2024/7/10.
 //
-
-#ifndef RAY_TRACING_RAY_H
-#define RAY_TRACING_RAY_H
-
+#pragma once
 #include "vec3.h"
 
 class Ray {
@@ -28,5 +25,3 @@ class Ray {
     Point3 origin_;
     Vec3 direction_;
 };
-
-#endif //RAY_TRACING_RAY_H

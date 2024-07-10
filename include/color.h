@@ -1,10 +1,7 @@
 //
 // Created by atwbzhang on 2024/7/9.
 //
-
-#ifndef RAY_TRACING_COLOR_H
-#define RAY_TRACING_COLOR_H
-
+#pragma once
 #include "vec3.h"
 
 #include <iostream>
@@ -24,5 +21,3 @@ void write_color(std::ostream &out, const Color &pixel_color) {
     // Write out the pixel color components.
     out << rbyte << ' ' << gbyte << ' ' << bbyte << '\n';
 }
-
-#endif //RAY_TRACING_COLOR_H

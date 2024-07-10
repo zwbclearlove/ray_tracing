@@ -1,10 +1,7 @@
 //
-// Created by atwbzhang on 2024/7/9.
+// Created by atwbzhang on 2024/7/10.
 //
-
-#ifndef RAY_TRACING_VEC3_H
-#define RAY_TRACING_VEC3_H
-
+#pragma once
 #include <cmath>
 #include <iostream>
 
@@ -109,6 +106,3 @@ inline Vec3 cross(const Vec3& u, const Vec3& v) {
 inline Vec3 unit_vector(const Vec3& v) {
     return v / v.length();
 }
-
-
-#endif //RAY_TRACING_VEC3_H
