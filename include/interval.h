@@ -23,6 +23,12 @@ class Interval {
         return t > min_ && t < max_;
     }
 
+    inline double clamp(double x) const {
+        if (x < min_) return min_;
+        if (x > max_) return max_;
+        return x;
+    }
+
     static const Interval empty, universe;
 
     const double min() const { return min_; }

@@ -4,6 +4,7 @@
 #pragma once
 #include <cmath>
 #include <iostream>
+#include "common.h"
 
 using std::sqrt;
 
@@ -55,6 +56,14 @@ class Vec3 {
     inline double length_squared() const {
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
+
+    static Vec3 random() {
+        return Vec3(random_double(), random_double(), random_double());
+    }
+
+    static Vec3 random(double min, double max) {
+        return Vec3(random_double(min,max), random_double(min,max), random_double(min,max));
+    }
 };
 
 // Point3 is just an alias for Vec3, but useful for geometric clarity in the code.
@@ -105,4 +114,25 @@ inline Vec3 cross(const Vec3& u, const Vec3& v) {
 
 inline Vec3 unit_vector(const Vec3& v) {
     return v / v.length();
+}
+
+inline Vec3 random_in_unit_sphere() {
+    while (true) {
+        auto p = Vec3::random(-1, 1);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
+}
+
+inline Vec3 random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
+}
+
+inline Vec3 random_on_hemisphere(const Vec3& normal) {
+    Vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) {
+        return in_unit_sphere;
+    } else {
+        return -in_unit_sphere;
+    }
 }
