@@ -96,8 +96,12 @@ class Camera {
 
     Color ray_color(const Ray& r, int depth, const Hittable& world) {
         HitRecord rec;
+        if (depth <= 0) {
+            return Color(0, 0, 0);
+        }
+
         // ignore hits that are very close to the calculated intersection point
-        if (world.hit(r, Interval(0.0000001, kInfinity), rec)) {
+        if (world.hit(r, Interval(0.0001, kInfinity), rec)) {
             // Vec3 direction = random_on_hemisphere(rec.normal);
             // return 0.5 * ray_color(Ray(rec.p, direction), depth - 1, world);
             // Vec3 target = rec.p + rec.normal + random_on_hemisphere(rec.normal);
