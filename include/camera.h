@@ -40,13 +40,22 @@ class Camera {
 
     void set_aspect_ratio(double ar) { aspect_ratio_ = ar; }
     void set_image_width(int w) { image_width_ = w; }
+    void set_fov(double f) { vfov_ = f; }
     void set_samples_per_pixel(int s) { samples_per_pixel_ = s; }
     void set_max_depth(int d) { max_depth_ = d; }
+    // void set_lookfrom(const Point3& lookfrom) { lookfrom_ = lookfrom; }
+    // void set_lookat(const Point3& lookat) { lookat_ = lookat; }
+    // void set_vup(const Vec3& vup) { vup_ = vup; }
 
   private:
     // Image
     double aspect_ratio_ = 16.0 / 9.0;
     int    image_width_ = 1600;
+    double vfov_ = 90.0;
+    // Point3 lookfrom_ = Point3(0, 0, 0);
+    // Point3 lookat_ = Point3(0, 0, -1);
+    // Vec3   vup_ = Vec3(0, 1, 0);
+
     int    samples_per_pixel_ = 10;
     int    max_depth_ = 10;
     double pixel_samples_scale_;
@@ -55,7 +64,7 @@ class Camera {
     Point3 pixel00_loc_;    // Location of pixel 0, 0
     Vec3   pixel_delta_u_;  // Offset to pixel to the right
     Vec3   pixel_delta_v_;  // Offset to pixel below
-
+    // Vec3   u, v, w;
 
     void initialize() {
         // Caculate the image height, and ensure it is at least 1.
@@ -63,21 +72,35 @@ class Camera {
         image_height_ = (image_height < 1) ? 1 : image_height;
         pixel_samples_scale_ = 1.0 / samples_per_pixel_;
 
+        // center_ = lookfrom_;
+
         // Camera
+        // auto focal_length = (lookfrom_ - lookat_).length();
         auto focal_length = 1.0;
-        auto viewport_height = 2.0;
+        auto theta = degrees2radians(vfov_);
+        auto h = tan(theta / 2);
+
+        auto viewport_height = 2 * h * focal_length;
         auto viewport_width = viewport_height * (double(image_width_) / image_height);
 
+        // // Caculate the camera basis vectors.
+        // w = unit_vector(lookfrom_ - lookat_);
+        // u = unit_vector(cross(vup_, w));
+        // v = cross(w, u);
+
         // Caculate the vectors across the horizontal and down the vertical viewport edges.
-        auto viewport_u = Vec3(viewport_width, 0, 0);
-        auto viewport_v = Vec3(0, -viewport_height, 0);
+        // auto viewport_u = viewport_width * u;
+        // auto viewport_v = viewport_height * -v;
+        Vec3 viewport_u(viewport_width, 0, 0);
+        Vec3 viewport_v(0, -viewport_height, 0);
 
         // Caculate the horizontal and vertical delta vectors from pixel to pixel.
         pixel_delta_u_ = viewport_u / image_width_;
         pixel_delta_v_ = viewport_v / image_height_;
 
         // Caculate the location of the upper left pixel.
-        auto viewpoint_upper_left = center_ - Vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+        // auto viewpoint_upper_left = center_ - focal_length * w - viewport_u / 2 - viewport_v / 2;
+        auto viewpoint_upper_left = center_ - Vec3(0, 0, focal_length) - 0.5 * (viewport_u + viewport_v);
         pixel00_loc_ = viewpoint_upper_left + 0.5 * (pixel_delta_u_ + pixel_delta_v_);
     }
 
