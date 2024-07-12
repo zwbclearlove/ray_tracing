@@ -13,14 +13,19 @@ class Sphere : public Hittable {
   public:
     Sphere() {}
     Sphere(const Point3& center, double radius, std::shared_ptr<Material> material) 
-        : center_(center), radius_(ffmax(0, radius)), material_ptr_(material) {
+        : center_(center), radius_(ffmax(0, radius)), material_ptr_(material), is_moving_(false) {
         // Initialize the material to a default material.
+    }
+    Sphere(const Point3& center1, const Point3& center2, double radius, std::shared_ptr<Material> material)
+        : center_(center1), radius_(ffmax(0, radius)), material_ptr_(material), is_moving_(true) {
+        center_vec_ = center2 - center1;
     }
 
     const Point3 center() const { return center_; }
     const double radius() const { return radius_; }
     
     bool hit(const Ray& r, Interval ray_t, HitRecord& record) const override {
+        Point3 center = is_moving_ ? sphere_center(r.time()) : center_;
         Vec3 oc = center_ - r.origin();
         auto a = r.direction().length_squared();
         auto b_2 = dot(oc, r.direction());
@@ -53,4 +58,10 @@ class Sphere : public Hittable {
     Point3 center_;
     double radius_;
     std::shared_ptr<Material> material_ptr_;
+    bool is_moving_;
+    Vec3 center_vec_;
+
+    Point3 sphere_center(double time) const {
+        return center_ + center_vec_ * time;
+    }
 };
