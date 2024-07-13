@@ -58,6 +58,7 @@ class Sphere : public Hittable {
         record.p = r.at(root);
         Vec3 outward_normal = (record.p - center) / radius_;
         record.set_face_normal(r, outward_normal);
+        get_sphere_uv(outward_normal, record.u, record.v);
         record.material_ptr = material_ptr_;
 
         return true;
@@ -77,5 +78,19 @@ class Sphere : public Hittable {
 
     Point3 sphere_center(double time) const {
         return center_ + center_vec_ * time;
+    }
+
+    static void get_sphere_uv(const Point3& p, double& u, double& v) {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+        auto theta = acos(-p.y());
+        auto phi = atan2(-p.z(), p.x()) + kPi;
+        
+        u = phi / (2 * kPi);
+        v = theta / kPi;
     }
 };

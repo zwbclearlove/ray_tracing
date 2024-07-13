@@ -70,6 +70,21 @@ class AABB {
         return true;
     }
 
+    int longest_axis() const {
+        if (x_.size() > y_.size() && x_.size() > z_.size()) {
+            return 0;
+        } else if (y_.size() > z_.size()) {
+            return 1;
+        } else {
+            return 2;
+        }
+    }
+
+    static const AABB empty, universe;
+
   private:
     Interval x_, y_, z_;
 };
+
+const AABB AABB::empty(Interval::empty, Interval::empty, Interval::empty);
+const AABB AABB::universe(Interval::universe, Interval::universe, Interval::universe);

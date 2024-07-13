@@ -6,10 +6,12 @@
 #include "vec3.h"
 #include "material.h"
 #include "hittable.h"
+#include "texture.h"
 
 class Lambertian : public Material {
   public:
-    Lambertian(const Color& a) : albedo_(a) {}
+    Lambertian(const Color& a) : texture_(std::make_shared<SolidColor>(a)) {}
+    Lambertian(std::shared_ptr<Texture> texture) : texture_(texture) {}
 
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override {
         Vec3 scatter_direction = rec.normal + random_unit_vector();
@@ -20,12 +22,12 @@ class Lambertian : public Material {
         }
         
         scattered = Ray(rec.p, scatter_direction, r_in.time());
-        attenuation = albedo_;
+        attenuation = texture_->value(rec.u, rec.v, rec.p);
         return true;
     }
 
   private:
-    Color albedo_;
+    std::shared_ptr<Texture> texture_;
 };
 
 

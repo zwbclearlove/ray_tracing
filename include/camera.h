@@ -17,10 +17,10 @@ class Camera {
     Camera() {}
     Camera(const Point3& center) : center_(center) {}
     
-    void render(Hittable& world) {
+    void render(Hittable& world, const std::string& filename) {
         initialize();
 
-        std::ofstream file("test1.ppm", std::ios::out);
+        std::ofstream file(filename, std::ios::out);
         file << "P3\n" << image_width_ << ' ' << image_height_ << "\n255\n";
 
         for (int j = 0; j < image_height_; j++) {

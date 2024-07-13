@@ -11,11 +11,13 @@
 
 class Material;
 
-typedef struct HitRecord {
+struct HitRecord {
     Vec3 p;
     Vec3 normal;
     std::shared_ptr<Material> material_ptr;
     double t;
+    double u;
+    double v;
     bool front_face;
 
 
@@ -26,7 +28,7 @@ typedef struct HitRecord {
         front_face = dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
-} HitRecord;
+};
 
 class Hittable {
   public:
