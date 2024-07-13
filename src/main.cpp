@@ -3,10 +3,12 @@
 //
 
 #include "common.h"
+#include "bvh.h"
 #include "sphere.h"
 #include "hittable_list.h"
 #include "camera.h"
 #include "many_materials.h"
+
 
 int main() {
     // Load the sphere data.
@@ -66,21 +68,23 @@ int main() {
     auto material3 = std::make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
 
+    world = HittableList(std::make_shared<BVHNode>(world));
+
     // Render
     // Camera
     Camera camera;
     camera.set_aspect_ratio(16.0 / 9.0);
-    camera.set_image_width(400);
-    camera.set_samples_per_pixel(100);
-    camera.set_max_depth(25);
+    camera.set_image_width(800);
+    camera.set_samples_per_pixel(500);
+    camera.set_max_depth(50);
     
     camera.set_fov(20);
     camera.set_lookfrom(Point3(13, 2, 3));
     camera.set_lookat(Point3(0, 0, 0));
     camera.set_vup(Vec3(0, 1, 0));
 
-    camera.set_defocus_angle(0.6);
-    camera.set_focus_dist(10.0);
+    // camera.set_defocus_angle(0.6);
+    // camera.set_focus_dist(10.0);
 
     camera.render(world);
     return 0;

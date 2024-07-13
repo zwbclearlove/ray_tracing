@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "hittable.h"
+#include "aabb.h"
 
 class HittableList : public Hittable {
   public:
@@ -13,7 +14,10 @@ class HittableList : public Hittable {
     HittableList(std::shared_ptr<Hittable> object) { add(object); }
 
     void clear() { objects_.clear(); }
-    void add(std::shared_ptr<Hittable> object) { objects_.emplace_back(object); }
+    void add(std::shared_ptr<Hittable> object) {
+        objects_.emplace_back(object);
+        bbox_ = AABB(bbox_, object->bounding_box());
+    }
 
     virtual bool hit(const Ray& r, Interval ray_t, HitRecord& record) const {
         HitRecord temp_rec;
@@ -31,6 +35,11 @@ class HittableList : public Hittable {
         return hit_anything;
     }
 
+    std::vector<std::shared_ptr<Hittable>>& objects() { return objects_; }
+
+    AABB bounding_box() const override { return bbox_; }
+
   private:
     std::vector<std::shared_ptr<Hittable>> objects_;
+    AABB bbox_;
 };

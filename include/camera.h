@@ -122,9 +122,9 @@ class Camera {
         auto pixel_sample = pixel00_loc_ + (i + offset.x()) * pixel_delta_u_ + (j + offset.y()) * pixel_delta_v_;
 
         auto ray_origin = (defocus_angle_ <= 0) ? center_ : defocus_disk_sample();
-        auto dir = pixel_sample - center_;
+        auto ray_direction = pixel_sample - center_;
         auto ray_time = random_double();
-        return Ray(center_, dir, ray_time);
+        return Ray(ray_origin, ray_direction, ray_time);
     }
 
     Vec3 sample_square() const {

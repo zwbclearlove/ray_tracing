@@ -12,12 +12,21 @@
 class Sphere : public Hittable {
   public:
     Sphere() {}
+
+    // Stationary sphere.
     Sphere(const Point3& center, double radius, std::shared_ptr<Material> material) 
         : center_(center), radius_(ffmax(0, radius)), material_ptr_(material), is_moving_(false) {
-        // Initialize the material to a default material.
+        auto rvec = Vec3(radius, radius, radius);
+        bbox_ = AABB(center - rvec, center + rvec);
     }
+    // Moving sphere.
     Sphere(const Point3& center1, const Point3& center2, double radius, std::shared_ptr<Material> material)
         : center_(center1), radius_(ffmax(0, radius)), material_ptr_(material), is_moving_(true) {
+        auto rvec = Vec3(radius, radius, radius);
+        AABB box1(center1 - rvec, center1 + rvec);
+        AABB box2(center2 - rvec, center2 + rvec);
+        bbox_ = AABB(box1, box2);
+
         center_vec_ = center2 - center1;
     }
 
@@ -26,7 +35,7 @@ class Sphere : public Hittable {
     
     bool hit(const Ray& r, Interval ray_t, HitRecord& record) const override {
         Point3 center = is_moving_ ? sphere_center(r.time()) : center_;
-        Vec3 oc = center_ - r.origin();
+        Vec3 oc = center - r.origin();
         auto a = r.direction().length_squared();
         auto b_2 = dot(oc, r.direction());
         auto c = oc.length_squared() - radius_ * radius_;
@@ -47,11 +56,15 @@ class Sphere : public Hittable {
 
         record.t = root;
         record.p = r.at(root);
-        Vec3 outward_normal = (record.p - center_) / radius_;
+        Vec3 outward_normal = (record.p - center) / radius_;
         record.set_face_normal(r, outward_normal);
         record.material_ptr = material_ptr_;
 
         return true;
+    }
+
+    AABB bounding_box() const override {
+        return bbox_;
     }
   
   private:
@@ -60,6 +73,7 @@ class Sphere : public Hittable {
     std::shared_ptr<Material> material_ptr_;
     bool is_moving_;
     Vec3 center_vec_;
+    AABB bbox_;
 
     Point3 sphere_center(double time) const {
         return center_ + center_vec_ * time;
