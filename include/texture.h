@@ -6,6 +6,7 @@
 #include "color.h"
 #include "vec3.h"
 #include "image.h"
+#include "perlin.h"
 
 class Texture {
   public:
@@ -76,4 +77,19 @@ class ImageTexture : public Texture {
 
   private:
     Image image_;
+};
+
+class NoiseTexture : public Texture {
+  public:
+    NoiseTexture() {}
+    NoiseTexture(double scale) : scale_(scale), noise_() {}
+
+    Color value(double u, double v, const Point3& p) const override {
+        // return Color(1, 1, 1) * noise_.turb(p, 7);
+        return Color(0.5, 0.5, 0.5) * (1 + std::sin(scale_ * p.z() + 10 * noise_.turb(p)));
+    }
+
+  private:
+    Perlin noise_;
+    double scale_ = 1;
 };

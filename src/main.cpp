@@ -142,9 +142,37 @@ void earth() {
     camera.render(world, "earth.ppm");
 }
 
+void perlin_spheres() {
+    HittableList world;
+
+    auto perlin_texture = std::make_shared<NoiseTexture>(4);
+    auto perlin_surface = std::make_shared<Lambertian>(perlin_texture);
+    auto ground = std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, perlin_surface);
+    world.add(ground);
+    auto sphere = std::make_shared<Sphere>(Point3(0, 2, 0), 2, perlin_surface);
+    world.add(sphere);
+
+
+    Camera camera;
+    camera.set_aspect_ratio(16.0 / 9.0);
+    camera.set_image_width(800);
+    camera.set_samples_per_pixel(100);
+    camera.set_max_depth(50);
+
+    camera.set_fov(60);
+    camera.set_lookfrom(Point3(13, 2, 3));
+    camera.set_lookat(Point3(0, 0, 0));
+    camera.set_vup(Vec3(0, 1, 0));
+
+    camera.set_defocus_angle(0);
+    
+    camera.render(world, "perlin_spheres.ppm");
+}
+
 int main() {
-    bouncing_spheres();
+    // bouncing_spheres();
     // checkered_spheres();
     // earth();
+    perlin_spheres();
     return 0;
 }
