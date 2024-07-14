@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "many_materials.h"
 #include "texture.h"
+#include "quad.h"
 
 
 void bouncing_spheres() {
@@ -169,10 +170,45 @@ void perlin_spheres() {
     camera.render(world, "perlin_spheres.ppm");
 }
 
+void quads() {
+    HittableList world;
+
+    // Materials
+    auto left_red = std::make_shared<Lambertian>(Color(1.0, 0.2, 0.2));
+    auto back_green = std::make_shared<Lambertian>(Color(0.2, 1.0, 0.2));
+    auto right_blue = std::make_shared<Lambertian>(Color(0.2, 0.2, 1.0));
+    auto upper_orange = std::make_shared<Lambertian>(Color(1.0, 0.5, 0.0));
+    auto lower_teal = std::make_shared<Lambertian>(Color(0.2, 0.8, 0.8));
+
+    // Quads
+    world.add(std::make_shared<Quad>(Point3(-3, -2, 5), Vec3(0, 0, -4), Vec3(0, 4, 0), left_red));
+    world.add(std::make_shared<Quad>(Point3(-2, -2, 0), Vec3(4, 0, 0), Vec3(0, 4, 0), back_green));
+    world.add(std::make_shared<Quad>(Point3(3, -2, 1), Vec3(0, 0, 4), Vec3(0, 4, 0), right_blue));
+    world.add(std::make_shared<Quad>(Point3(-2, 3, 1), Vec3(4, 0, 0), Vec3(0, 0, 4), upper_orange));
+    world.add(std::make_shared<Quad>(Point3(-2, -3, 5), Vec3(4, 0, 0), Vec3(0, 0, -4), lower_teal));
+
+    Camera camera;
+
+    camera.set_aspect_ratio(1.0);
+    camera.set_image_width(800);
+    camera.set_samples_per_pixel(100);
+    camera.set_max_depth(50);
+
+    camera.set_fov(80);
+    camera.set_lookfrom(Point3(0, 0, 9));
+    camera.set_lookat(Point3(0, 0, 0));
+    camera.set_vup(Vec3(0, 1, 0));
+
+    camera.set_defocus_angle(0);
+
+    camera.render(world, "quads.ppm");
+}
+
 int main() {
     // bouncing_spheres();
     // checkered_spheres();
     // earth();
-    perlin_spheres();
+    // perlin_spheres();
+    quads();
     return 0;
 }

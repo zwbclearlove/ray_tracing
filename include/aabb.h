@@ -11,12 +11,15 @@ class AABB {
   public:
     AABB() {}
 
-    AABB(const Interval& x, const Interval& y, const Interval& z) : x_(x), y_(y), z_(z) {}
+    AABB(const Interval& x, const Interval& y, const Interval& z) : x_(x), y_(y), z_(z) {
+        pad_to_minimums();
+    }
 
     AABB(const Point3& a, const Point3& b) {
         x_ = (a.x() <= b.x()) ? Interval(a.x(), b.x()) : Interval(b.x(), a.x());
         y_ = (a.y() <= b.y()) ? Interval(a.y(), b.y()) : Interval(b.y(), a.y());
         z_ = (a.z() <= b.z()) ? Interval(a.z(), b.z()) : Interval(b.z(), a.z());
+        pad_to_minimums();
     }
 
     AABB(const AABB& box0, const AABB& box1) {
@@ -84,6 +87,21 @@ class AABB {
 
   private:
     Interval x_, y_, z_;
+
+    void pad_to_minimums() {
+        // Adjust the AABB so that no side is narrower than some delta, padding if necessary.
+
+        double delta = 0.0001;
+        if (x_.size() < delta) {
+            x_ = x_.expand(delta);
+        }
+        if (y_.size() < delta) {
+            y_ = y_.expand(delta);
+        }
+        if (z_.size() < delta) {
+            z_ = z_.expand(delta);
+        }
+    }
 };
 
 const AABB AABB::empty(Interval::empty, Interval::empty, Interval::empty);
