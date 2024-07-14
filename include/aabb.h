@@ -28,6 +28,10 @@ class AABB {
         z_ = Interval(box0.axis_interval(2), box1.axis_interval(2));
     }
 
+    const Interval& x() const { return x_; }
+    const Interval& y() const { return y_; }
+    const Interval& z() const { return z_; }
+
     const Interval& axis_interval(int n) const {
         if (n == 0) {
             return x_;
@@ -106,3 +110,13 @@ class AABB {
 
 const AABB AABB::empty(Interval::empty, Interval::empty, Interval::empty);
 const AABB AABB::universe(Interval::universe, Interval::universe, Interval::universe);
+
+AABB operator+(const AABB& bbox, const Vec3& offset) {
+    return AABB(bbox.x() + offset.x(),
+                bbox.y() + offset.y(),
+                bbox.z() + offset.z());
+}
+
+AABB operator+(const Vec3& offset, const AABB& bbox) {
+    return bbox + offset;
+}

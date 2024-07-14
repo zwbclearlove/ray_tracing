@@ -8,6 +8,7 @@
 #include "hittable.h"
 #include "texture.h"
 
+
 class Lambertian : public Material {
   public:
     Lambertian(const Color& a) : texture_(std::make_shared<SolidColor>(a)) {}
@@ -85,4 +86,36 @@ class Dielectric : public Material {
         r0 = r0 * r0;
         return r0 + (1 - r0) * pow((1 - cosine), 5);
     }
+};
+
+class DiffuseLight : public Material {
+  public:
+    DiffuseLight(std::shared_ptr<Texture> texture) : texture_(texture) {}
+    DiffuseLight(const Color& emit) : texture_(std::make_shared<SolidColor>(emit)) {}
+
+    virtual bool scatter(const Ray& r_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override {
+        return false;
+    }
+
+    Color emitted(double u, double v, const Point3& p) const override {
+        return texture_->value(u, v, p);
+    }
+
+  private:
+    std::shared_ptr<Texture> texture_;
+};
+
+class Isotropic : public Material {
+  public:
+    Isotropic(const Color& albedo) : texture_(std::make_shared<SolidColor>(albedo)) {}
+    Isotropic(std::shared_ptr<Texture> texture) : texture_(texture) {}
+
+    virtual bool scatter(const Ray& r_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const override {
+        scattered = Ray(rec.p, random_unit_vector(), r_in.time());
+        attenuation = texture_->value(rec.u, rec.v, rec.p);
+        return true;
+    }
+
+  private:
+    std::shared_ptr<Texture> texture_;
 };

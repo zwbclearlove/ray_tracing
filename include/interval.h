@@ -53,3 +53,11 @@ class Interval {
 
 const Interval Interval::empty(kInfinity, -kInfinity);
 const Interval Interval::universe(-kInfinity, kInfinity);
+
+Interval operator+(const Interval& interval, double displacement) {
+    return Interval(interval.min() + displacement, interval.max() + displacement);
+}
+
+Interval operator+(double displacement, const Interval& interval) {
+    return interval + displacement;
+}

@@ -48,6 +48,7 @@ class Camera {
     void set_vup(const Vec3& vup) { vup_ = vup; }
     void set_defocus_angle(double angle) { defocus_angle_ = angle; }
     void set_focus_dist(double dist) { focus_distance_ = dist; }
+    void set_background_color(const Color& color) { background_color_ = color; }
 
   private:
     // Image
@@ -62,6 +63,8 @@ class Camera {
 
     int    samples_per_pixel_ = 10;
     int    max_depth_ = 10;
+    Color  background_color_ = Color(0, 0, 0);
+
     double pixel_samples_scale_;
     int    image_height_;   // Rendered image height
     Point3 center_;         // Camera center
@@ -139,27 +142,45 @@ class Camera {
     }
 
     Color ray_color(const Ray& r, int depth, const Hittable& world) {
-        HitRecord rec;
         if (depth <= 0) {
             return Color(0, 0, 0);
         }
 
-        // ignore hits that are very close to the calculated intersection point
-        if (world.hit(r, Interval(0.0001, kInfinity), rec)) {
-            // Vec3 direction = random_on_hemisphere(rec.normal);
-            // return 0.5 * ray_color(Ray(rec.p, direction), depth - 1, world);
-            // Vec3 target = rec.p + rec.normal + random_on_hemisphere(rec.normal);
-            // return 0.5 * ray_color(Ray(rec.p, target - rec.p), depth - 1, world);
-            Ray scattered;
-            Color attenuation;
-            if (rec.material_ptr->scatter(r, rec, attenuation, scattered))
-                return attenuation * ray_color(scattered, depth - 1, world);
-            return Color(0, 0, 0);
+        HitRecord rec;
+
+        // If the ray hits nothing, return the background color.
+        if (!world.hit(r, Interval(0.001, kInfinity), rec)) {
+            return background_color_;
         }
 
-        Vec3 unit_direction = unit_vector(r.direction());
-        auto a = 0.5 * (unit_direction.y() + 1.0);
-        return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
+        Ray scattered;
+        Color attenuation;
+        Color emission = rec.material_ptr->emitted(rec.u, rec.v, rec.p);
+
+        if (!rec.material_ptr->scatter(r, rec, attenuation, scattered)) {
+            return emission;
+        }
+
+        Color scatter = attenuation * ray_color(scattered, depth - 1, world);
+
+        return emission + scatter;
+
+        // // ignore hits that are very close to the calculated intersection point
+        // if (world.hit(r, Interval(0.0001, kInfinity), rec)) {
+        //     // Vec3 direction = random_on_hemisphere(rec.normal);
+        //     // return 0.5 * ray_color(Ray(rec.p, direction), depth - 1, world);
+        //     // Vec3 target = rec.p + rec.normal + random_on_hemisphere(rec.normal);
+        //     // return 0.5 * ray_color(Ray(rec.p, target - rec.p), depth - 1, world);
+        //     Ray scattered;
+        //     Color attenuation;
+        //     if (rec.material_ptr->scatter(r, rec, attenuation, scattered))
+        //         return attenuation * ray_color(scattered, depth - 1, world);
+        //     return Color(0, 0, 0);
+        // }
+
+        // Vec3 unit_direction = unit_vector(r.direction());
+        // auto a = 0.5 * (unit_direction.y() + 1.0);
+        // return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
     }
 
 };
