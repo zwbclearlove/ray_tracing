@@ -4,6 +4,7 @@
 #pragma once
 #include <iostream>
 #include <fstream>
+#include <thread>
 
 #include "common.h"
 #include "hittable.h"
@@ -37,6 +38,40 @@ class Camera {
         std::clog << "\nDone.\n";
     }
 
+    void render_multithread(Hittable& world, const std::string& filename) {
+        initialize();
+        unsigned concurrent_count = std::thread::hardware_concurrency();
+        std::cout << "This machine supports concurrent_count threads" << concurrent_count << std::endl;
+        std::vector<std::thread> threads;
+        std::vector<Color> pixel_colors(image_width_ * image_height_); 
+
+        for (int i = 0; i < concurrent_count; i++) {
+            threads.push_back(std::thread([this, &world, &pixel_colors, i, concurrent_count] {
+                for (int j = i; j < image_height_; j += concurrent_count) {
+                    std::clog << "\nScanline remaining: " << (image_height_ - j) << ' ' << std::flush;
+                    for (int i = 0; i < image_width_; i++) {
+                        Color pixel_color(0, 0, 0);
+                        for (int s = 0; s < samples_per_pixel_; s++) {
+                            Ray r = get_ray(i, j);
+                            pixel_color += ray_color(r, max_depth_, world);
+                        }
+                        pixel_colors[j * image_width_ + i] = pixel_color * pixel_samples_scale_;
+                    }
+                }
+            }));
+        }
+
+        for (auto& thread : threads) {
+            thread.join();
+        }
+
+        std::ofstream file(filename, std::ios::out);
+        file << "P3\n" << image_width_ << ' ' << image_height_ << "\n255\n";
+        for (auto& color : pixel_colors) {
+            write_color(file, color);
+        }
+        std::clog << "\nDone.\n";
+    }
 
     void set_aspect_ratio(double ar) { aspect_ratio_ = ar; }
     void set_image_width(int w) { image_width_ = w; }

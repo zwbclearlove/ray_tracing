@@ -272,9 +272,9 @@ void cornell_box() {
     Camera camera;
 
     camera.set_aspect_ratio(1.0);
-    camera.set_image_width(300);
-    camera.set_samples_per_pixel(30);
-    camera.set_max_depth(20);
+    camera.set_image_width(400);
+    camera.set_samples_per_pixel(500);
+    camera.set_max_depth(40);
     camera.set_background_color(Color(0, 0, 0));
 
     camera.set_fov(40);
@@ -284,7 +284,8 @@ void cornell_box() {
 
     camera.set_defocus_angle(0);
 
-    camera.render(world, "cornell_box.ppm");
+    // camera.render(world, "cornell_box.ppm");
+    camera.render_multithread(world, "cornell_box.ppm");
 }
 
 void cornell_smoke() {
@@ -361,7 +362,7 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth) {
     auto center1 = Point3(400, 400, 200);
     auto center2 = center1 + Vec3(30, 0, 0);
     auto sphere_material = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.1));
-    world.add(std::make_shared<Sphere>(center1, 50, sphere_material));
+    world.add(std::make_shared<Sphere>(center1, center2, 50, sphere_material));
 
     auto dielectric = std::make_shared<Dielectric>(1.5);
     world.add(std::make_shared<Sphere>(Point3(260, 150, 45), 50, dielectric));
@@ -415,7 +416,7 @@ int main() {
     // simple_light();
     // cornell_box();
     // cornell_smoke();
-    // final_scene(800, 10000, 40);
-    final_scene(400, 250, 4);
+    // final_scene(800, 500, 50);
+    final_scene(800, 10000, 40);
     return 0;
 }
