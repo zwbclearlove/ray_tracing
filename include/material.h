@@ -19,5 +19,9 @@ class Material {
     }
 
     virtual bool scatter(const Ray& r_in, const HitRecord& rec, Color& attenuation, Ray& scattered) const = 0;
+
+    // virtual double scattering_pdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const {
+    //     return 0;
+    // }
 };
 

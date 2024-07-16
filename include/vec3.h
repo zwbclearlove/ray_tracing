@@ -156,6 +156,19 @@ inline Vec3 random_on_hemisphere(const Vec3& normal) {
     }
 }
 
+inline Vec3 random_cosine_direction() {
+    auto r1 = random_double();
+    auto r2 = random_double();
+
+    auto phi = 2 * kPi * r1;
+
+    auto x = cos(phi) * sqrt(r2);
+    auto y = sin(phi) * sqrt(r2);
+    auto z = sqrt(1 - r2);
+    return Vec3(x, y, z);
+
+}
+
 inline Vec3 reflect(const Vec3& v, const Vec3& n) {
     return v - 2 * dot(v, n) * n;
 }

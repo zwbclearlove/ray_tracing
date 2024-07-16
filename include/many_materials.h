@@ -27,6 +27,11 @@ class Lambertian : public Material {
         return true;
     }
 
+    // virtual double scattering_pdf(const Ray& r_in, const HitRecord& rec, const Ray& scattered) const override {
+    //     auto cos_theta = dot(rec.normal, unit_vector(scattered.direction()));
+    //     return cos_theta < 0 ? 0 : cos_theta / kPi;
+    // }
+
   private:
     std::shared_ptr<Texture> texture_;
 };

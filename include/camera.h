@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <mutex>
 
 #include "common.h"
 #include "hittable.h"
@@ -28,9 +29,15 @@ class Camera {
             std::clog << "\nScanline remaining: " << (image_height_ - j) << ' ' << std::flush;
             for (int i = 0; i < image_width_; i++) {
                 Color pixel_color(0, 0, 0);
-                for (int s = 0; s < samples_per_pixel_; s++) {
-                    Ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth_, world);
+                // for (int s = 0; s < samples_per_pixel_; s++) {
+                //     Ray r = get_ray(i, j);
+                //     pixel_color += ray_color(r, max_depth_, world);
+                // }
+                for (int s_j = 0; s_j < sqrt_samples_per_pixel_; s_j++) {
+                    for (int s_i = 0; s_i < sqrt_samples_per_pixel_; s_i++) {
+                        Ray r = get_ray(i, j, s_i, s_j);
+                        pixel_color += ray_color(r, max_depth_, world);
+                    }
                 }
                 write_color(file, pixel_color * pixel_samples_scale_);
             }
@@ -44,20 +51,36 @@ class Camera {
         std::cout << "This machine supports concurrent_count threads" << concurrent_count << std::endl;
         std::vector<std::thread> threads;
         std::vector<Color> pixel_colors(image_width_ * image_height_); 
-
-        for (int i = 0; i < concurrent_count; i++) {
-            threads.push_back(std::thread([this, &world, &pixel_colors, i, concurrent_count] {
-                for (int j = i; j < image_height_; j += concurrent_count) {
-                    std::clog << "\nScanline remaining: " << (image_height_ - j) << ' ' << std::flush;
+        std::mutex m;
+        int j = 0;
+        for (int ti = 0; ti < concurrent_count; ti++) {
+            threads.push_back(std::thread([this, &world, &pixel_colors, &m, &j, ti, concurrent_count] {
+                while (true) {
+                    m.lock();
+                    int current_j = j;
+                    if (current_j >= image_height_) {
+                        m.unlock();
+                        break;
+                    }
+                    j++;
+                    m.unlock();
+                    std::clog << "\nScanline remaining: " << (image_height_ - current_j) << ' ' << std::flush;
                     for (int i = 0; i < image_width_; i++) {
                         Color pixel_color(0, 0, 0);
-                        for (int s = 0; s < samples_per_pixel_; s++) {
-                            Ray r = get_ray(i, j);
-                            pixel_color += ray_color(r, max_depth_, world);
+                        // for (int s = 0; s < samples_per_pixel_; s++) {
+                        //     Ray r = get_ray(i, j);
+                        //     pixel_color += ray_color(r, max_depth_, world);
+                        // }
+                        for (int s_j = 0; s_j < sqrt_samples_per_pixel_; s_j++) {
+                            for (int s_i = 0; s_i < sqrt_samples_per_pixel_; s_i++) {
+                                Ray r = get_ray(i, current_j, s_i, s_j);
+                                pixel_color += ray_color(r, max_depth_, world);
+                            }
                         }
-                        pixel_colors[j * image_width_ + i] = pixel_color * pixel_samples_scale_;
-                    }
+                        pixel_colors[current_j * image_width_ + i] = pixel_color * pixel_samples_scale_;
+                    }    
                 }
+                
             }));
         }
 
@@ -97,6 +120,8 @@ class Camera {
     double focus_distance_ = 10;
 
     int    samples_per_pixel_ = 10;
+    int    sqrt_samples_per_pixel_ = 3;
+    double sqrt_samples_per_pixel_inv_ = 1.0 / 3.0;
     int    max_depth_ = 10;
     Color  background_color_ = Color(0, 0, 0);
 
@@ -114,7 +139,11 @@ class Camera {
         // Caculate the image height, and ensure it is at least 1.
         int image_height = int(image_width_ / aspect_ratio_);
         image_height_ = (image_height < 1) ? 1 : image_height;
-        pixel_samples_scale_ = 1.0 / samples_per_pixel_;
+        
+        sqrt_samples_per_pixel_ = int(sqrt(samples_per_pixel_));
+        sqrt_samples_per_pixel_inv_ = 1.0 / sqrt_samples_per_pixel_;
+        pixel_samples_scale_ = 1.0 / (sqrt_samples_per_pixel_ * sqrt_samples_per_pixel_);
+
 
         center_ = lookfrom_;
 
@@ -153,16 +182,24 @@ class Camera {
         defocus_disk_v_ = defocus_disk_radius * v_;
     }
 
-    Ray get_ray(int i, int j) const {
-        // Construct a camera ray originating from the defocus disk and directed at a randomly
-        // sampled point around the pixel location i, j.
-        auto offset = sample_square();
+    Ray get_ray(int i, int j, int s_i, int s_j) const {
+         // Construct a camera ray originating from the defocus disk and directed at a randomly
+        // sampled point around the pixel location i, j for stratified sample square s_i, s_j.
+        auto offset = sample_square_stratified(s_i, s_j);
         auto pixel_sample = pixel00_loc_ + (i + offset.x()) * pixel_delta_u_ + (j + offset.y()) * pixel_delta_v_;
 
         auto ray_origin = (defocus_angle_ <= 0) ? center_ : defocus_disk_sample();
         auto ray_direction = pixel_sample - center_;
         auto ray_time = random_double();
         return Ray(ray_origin, ray_direction, ray_time);
+    }
+
+    Vec3 sample_square_stratified(int s_i, int s_j) const {
+        // Returns the vector to a random point in the square sub-pixel specified by grid
+        // indices s_i and s_j, for an idealized unit square pixel [-.5,-.5] to [+.5,+.5].
+        auto u = (s_i + random_double()) * sqrt_samples_per_pixel_inv_;
+        auto v = (s_j + random_double()) * sqrt_samples_per_pixel_inv_;
+        return Vec3(u - 0.5, v - 0.5, 0);
     }
 
     Vec3 sample_square() const {
@@ -195,6 +232,9 @@ class Camera {
         if (!rec.material_ptr->scatter(r, rec, attenuation, scattered)) {
             return emission;
         }
+
+        // double scattering_pdf = rec.material_ptr->scattering_pdf(r, rec, scattered);
+        // double pdf = scattering_pdf;
 
         Color scatter = attenuation * ray_color(scattered, depth - 1, world);
 

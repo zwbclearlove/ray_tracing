@@ -272,9 +272,9 @@ void cornell_box() {
     Camera camera;
 
     camera.set_aspect_ratio(1.0);
-    camera.set_image_width(400);
-    camera.set_samples_per_pixel(500);
-    camera.set_max_depth(40);
+    camera.set_image_width(800);
+    camera.set_samples_per_pixel(900);
+    camera.set_max_depth(100);
     camera.set_background_color(Color(0, 0, 0));
 
     camera.set_fov(40);
@@ -330,7 +330,7 @@ void cornell_smoke() {
 
     camera.set_defocus_angle(0);
 
-    camera.render(world, "cornell_smoke.ppm");
+    camera.render_multithread(world, "cornell_smoke.ppm");
 }
 
 void final_scene(int image_width, int samples_per_pixel, int max_depth) {
@@ -404,7 +404,7 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth) {
 
     camera.set_defocus_angle(0);
 
-    camera.render(world, "final_scene.ppm");
+    camera.render_multithread(world, "final_scene.ppm");
 }
 
 int main() {
@@ -416,7 +416,7 @@ int main() {
     // simple_light();
     // cornell_box();
     // cornell_smoke();
-    // final_scene(800, 500, 50);
-    final_scene(800, 10000, 40);
+    final_scene(800, 6400, 40);
+    // final_scene(800, 10000, 40);
     return 0;
 }
